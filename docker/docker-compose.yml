@@ -1,0 +1,52 @@
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    container_name: summarization_app
+    ports:
+      - "8002:8000"
+    environment:
+      - MLFLOW_TRACKING_URI=http://host.docker.internal:5000
+      - BENCHMARK_SAMPLE_SIZE=5
+      - TUNE_SAMPLE_SIZE=5
+      - TEST_SAMPLE_SIZE=2
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+        ]
+      interval: 30s
+      timeout: 10s
+      start_period: 120s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:v2.44.0
+    container_name: prometheus_server
+    ports:
+      - "9092:9090"
+    volumes:
+      - ../config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - app
+
+  grafana:
+    image: grafana/grafana:9.5.2
+    container_name: grafana_server
+    ports:
+      - "3002:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ../config/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+      - ../config/grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml:ro
+      - ../config/grafana/dashboard_summarization.json:/var/lib/grafana/dashboards/dashboard_summarization.json:ro
+    depends_on:
+      - prometheus
