@@ -72,26 +72,26 @@ The project is organized around four pillars:
 ## Architecture
 
 ```
-                     ┌─────────────────────┐
+                     ┌──────────────────────┐
                      │   Client / Consumer  │
                      └──────────┬───────────┘
                                 │ HTTP (POST /summarize)
-                     ┌──────────▼───────────┐
+                     ┌──────────▼────────────┐
                      │   FastAPI Service     │──── exposes /metrics
                      │  (src/, config/)      │
-                     └──────────┬───────────┘
+                     └──────────┬────────────┘
                                 │
         ┌───────────────────────┼────────────────────────┐
         │                       │                        │
-┌───────▼────────┐   ┌──────────▼──────────┐   ┌──────────▼─────────┐
-│   MLflow        │   │     Prometheus       │   │   ZenML Pipelines   │
-│ Tracking Server │   │  (scrapes /metrics)  │   │  (train / tune)     │
-│  + Model Registry│  └──────────┬──────────┘   └──────────┬─────────┘
-└─────────────────┘              │                          │
-                        ┌─────────▼─────────┐        ┌───────▼────────┐
+┌───────▼───────────┐   ┌──────────▼───────────┐   ┌──────────▼──────────┐
+│   MLflow          │   │     Prometheus       │   │   ZenML Pipelines   │
+│ Tracking Server   │   │  (scrapes /metrics)  │   │  (train / tune)     │
+│  + Model Registry │   └──────────┬───────────┘   └──────────┬──────────┘
+└───────────────────┘              │                          │
+                        ┌─────────▼───────────┐        ┌───────▼────────┐
                         │      Grafana        │        │     Optuna     │
                         │  (dashboards/alerts)│        │  (HPO trials)  │
-                        └────────────────────┘        └────────────────┘
+                        └─────────────────────┘        └────────────────┘
 ```
 
 All services are orchestrated together via Docker Compose (`docker/`).
